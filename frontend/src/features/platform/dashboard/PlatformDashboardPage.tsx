@@ -1,79 +1,95 @@
-import { Link } from "react-router-dom";
-import { useShopRequests } from "@/features/platform/shop-requests/hooks/useShopRequests";
+import OverviewCard from "./components/OverviewCard";
+import PackagePieChart from "./components/PackagePieChart";
+import CustomLineChart from "./components/CustomLineChart";
+import {
+  useOverview,
+  usePackageSales,
+  useSubscriptionChart,
+  useOrderChart,
+} from "./hooks/usePlatformDashboard";
 
 export default function PlatformDashboardPage() {
-  const { data, isLoading } = useShopRequests();
+  const { data: overview, isLoading: overviewLoading, isError: overviewError } =
+    useOverview();
+  const {
+    data: packageSales,
+    isLoading: packageLoading,
+    isError: packageError,
+  } = usePackageSales();
+  const {
+    data: subscriptionChart,
+    isLoading: subscriptionLoading,
+    isError: subscriptionError,
+  } = useSubscriptionChart(6);
+  const {
+    data: orderChart,
+    isLoading: orderLoading,
+    isError: orderError,
+  } = useOrderChart(7);
 
-  const pendingCount = data?.length ?? 0;
+  const isLoading =
+    overviewLoading || packageLoading || subscriptionLoading || orderLoading;
+
+  const isError =
+    overviewError || packageError || subscriptionError || orderError;
+
+  if (isLoading) {
+    return <div className="p-6">Loading platform dashboard...</div>;
+  }
+
+  if (isError || !overview) {
+    return <div className="p-6 text-red-500">Failed to load dashboard.</div>;
+  }
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-3xl border border-slate-200 bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-7 text-white shadow-sm">
-        <h1 className="text-2xl font-bold tracking-tight">Platform Dashboard</h1>
-        <p className="mt-2 text-sm text-slate-300">
-          Tổng quan vận hành phía platform.
+    <div className="space-y-6 p-6">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">
+          Platform Dashboard
+        </h1>
+        <p className="text-sm text-gray-500">
+          Overview of platform performance and subscriptions
         </p>
-      </section>
+      </div>
 
-      <section className="grid gap-4 md:grid-cols-3">
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-sm font-medium text-slate-500">
-                Pending Shop Requests
-              </div>
-              <div className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                {isLoading ? "..." : pendingCount}
-              </div>
-            </div>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <OverviewCard title="Total Shops" value={overview.totalShops} />
+        <OverviewCard title="Active Shops" value={overview.activeShops} />
+        <OverviewCard title="Total Users" value={overview.totalUsers} />
+        <OverviewCard title="Total Orders" value={overview.totalOrders} />
+        <OverviewCard title="Packages Sold" value={overview.totalPackagesSold} />
+        <OverviewCard
+          title="Active Subscriptions"
+          value={overview.activeSubscriptions}
+        />
+        <OverviewCard
+          title="Pending Requests"
+          value={overview.pendingShopRequests}
+        />
+        <OverviewCard
+          title="Approved Requests"
+          value={overview.approvedShopRequests}
+        />
+      </div>
 
-            <div className="rounded-xl bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-              Pending
-            </div>
-          </div>
-
-          <Link
-            to="/platform/shop-requests"
-            className="mt-6 inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-          >
-            View requests
-          </Link>
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold">Package Sales</h2>
+          <PackagePieChart data={packageSales?.items ?? []} />
         </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-sm font-medium text-slate-500">
-                Approved Today
-              </div>
-              <div className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                -
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
-              Today
-            </div>
-          </div>
+        <div className="rounded-2xl border bg-white p-4 shadow-sm">
+          <h2 className="mb-4 text-lg font-semibold">
+            Subscription Growth (6 months)
+          </h2>
+          <CustomLineChart data={subscriptionChart?.points ?? []} />
         </div>
+      </div>
 
-        <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="text-sm font-medium text-slate-500">
-                Total Shops
-              </div>
-              <div className="mt-3 text-3xl font-bold tracking-tight text-slate-900">
-                -
-              </div>
-            </div>
-
-            <div className="rounded-xl bg-sky-50 px-3 py-1 text-xs font-semibold text-sky-700">
-              System
-            </div>
-          </div>
-        </div>
-      </section>
+      <div className="rounded-2xl border bg-white p-4 shadow-sm">
+        <h2 className="mb-4 text-lg font-semibold">Orders (Last 7 Days)</h2>
+        <CustomLineChart data={orderChart?.points ?? []} />
+      </div>
     </div>
   );
 }

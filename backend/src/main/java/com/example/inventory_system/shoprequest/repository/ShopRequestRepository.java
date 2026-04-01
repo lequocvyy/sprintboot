@@ -11,4 +11,6 @@ public interface ShopRequestRepository extends JpaRepository<ShopRequest, Long> 
     List<ShopRequest> findByStatus(ShopRequestStatus status);
 
     boolean existsByRequestedByIdAndStatus(Long userId, ShopRequestStatus status);
+
+    long countByStatus(ShopRequestStatus status);
 }

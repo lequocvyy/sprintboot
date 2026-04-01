@@ -42,6 +42,10 @@ public class UserServiceImpl implements UserService {
         validateOwnerPermission();
         securityService.requireShop();
 
+        if (request.getRole() == null || request.getRole().isBlank()) {
+            throw new BusinessException("Role is required");
+        }
+
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new DuplicateResourceException("Username already exists");
         }
@@ -83,7 +87,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<StaffResponse> getStaffs() {
-        validateOwnerPermission();
+        validateOwnerOrManagerPermission();
         securityService.requireShop();
 
         Long shopId = securityService.getCurrentShopId();
@@ -140,8 +144,18 @@ public class UserServiceImpl implements UserService {
     }
 
     private void validateOwnerPermission() {
-        if (!securityService.getCurrentUser().getRoleNames().contains("SHOP_OWNER")) {
+        Set<String> roleNames = securityService.getCurrentUser().getRoleNames();
+
+        if (!roleNames.contains("SHOP_OWNER")) {
             throw new BusinessException("Only shop owner can manage staff");
+        }
+    }
+
+    private void validateOwnerOrManagerPermission() {
+        Set<String> roleNames = securityService.getCurrentUser().getRoleNames();
+
+        if (!roleNames.contains("SHOP_OWNER") && !roleNames.contains("SHOP_MANAGER")) {
+            throw new BusinessException("Only shop owner or shop manager can view staff");
         }
     }
 

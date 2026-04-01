@@ -97,7 +97,7 @@ export default function LoginPage() {
             className="w-full rounded-xl border px-4 py-2 outline-none"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="platformadmin hoặc email"
+            placeholder="Your username (ex: platformadmin): "
           />
         </div>
 
@@ -108,7 +108,7 @@ export default function LoginPage() {
             className="w-full rounded-xl border px-4 py-2 outline-none"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="123456"
+            placeholder="Your password:"
           />
         </div>
 

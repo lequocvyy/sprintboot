@@ -20,11 +20,11 @@ public class UserController {
         this.userService = userService;
     }
 
-    @PreAuthorize("hasAuthority('SHOP_OWNER')")
-    @GetMapping("/staff")
-    public List<StaffResponse> getStaffs() {
-        return userService.getStaffs();
-    }
+    @PreAuthorize("hasAnyAuthority('SHOP_OWNER', 'SHOP_MANAGER')")
+@GetMapping("/staff")
+public List<StaffResponse> getStaffs() {
+    return userService.getStaffs();
+}
 
     @PreAuthorize("hasAuthority('SHOP_OWNER')")
     @PostMapping("/staff")

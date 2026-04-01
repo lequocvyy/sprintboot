@@ -14,4 +14,6 @@ public interface ShopRepository extends JpaRepository<Shop, Long> {
     boolean existsByCode(String code);
 
     boolean existsBySlug(String slug);
+
+    long countByActiveTrue();
 }

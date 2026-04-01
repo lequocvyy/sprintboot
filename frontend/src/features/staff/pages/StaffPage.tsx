@@ -122,7 +122,7 @@ export default function StaffPage() {
                 value={form.username}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
-                placeholder="nhanvien01"
+                placeholder="Staff's username (ex: vy.staff): "
                 required
               />
             </div>
@@ -151,7 +151,7 @@ export default function StaffPage() {
                 value={form.email}
                 onChange={handleChange}
                 className="w-full rounded-lg border border-slate-300 px-3 py-2 outline-none focus:border-slate-500"
-                placeholder="staff@example.com"
+                placeholder="name@staff.com or name@manager.com"
                 required
               />
             </div>

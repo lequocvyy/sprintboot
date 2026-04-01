@@ -34,8 +34,7 @@ public class SecurityConfig {
 
     @Bean
     public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider =
-                new DaoAuthenticationProvider(customUserDetailsService);
+        DaoAuthenticationProvider provider = new DaoAuthenticationProvider(customUserDetailsService);
         provider.setPasswordEncoder(passwordEncoder);
         return provider;
     }
@@ -50,44 +49,50 @@ public class SecurityConfig {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(csrf -> csrf.disable())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationProvider(authenticationProvider())
                 .authorizeHttpRequests(auth -> auth
-        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-        .requestMatchers("/api/auth/**").permitAll()
-        .requestMatchers(HttpMethod.GET, "/api/auth/public/**").permitAll()
-        .requestMatchers(HttpMethod.POST, "/api/auth/public/**").permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/auth/public/**").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/auth/public/**").permitAll()
 
-        .requestMatchers(HttpMethod.GET, "/api/shop-requests/pending").hasAuthority("PLATFORM_ADMIN")
-        .requestMatchers(HttpMethod.POST, "/api/shop-requests/*/approve").hasAuthority("PLATFORM_ADMIN")
-        .requestMatchers(HttpMethod.POST, "/api/shop-requests").hasAuthority("SHOP_OWNER")
+                        .requestMatchers("/api/platform-dashboard/**").hasAuthority("PLATFORM_ADMIN")
 
-        .requestMatchers("/api/users/staff/**").hasAuthority("SHOP_OWNER")
+                        .requestMatchers(HttpMethod.GET, "/api/shop-requests/pending").hasAuthority("PLATFORM_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/shop-requests/*/approve").hasAuthority("PLATFORM_ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/shop-requests").hasAuthority("SHOP_OWNER")
+                        .requestMatchers(HttpMethod.GET, "/api/users/staff/**")
+.hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER")
 
-        .requestMatchers(HttpMethod.GET, "/api/warehouses/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
-        .requestMatchers("/api/warehouses/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER")
+.requestMatchers(HttpMethod.POST, "/api/users/staff/**")
+.hasAuthority("SHOP_OWNER")
 
-        .requestMatchers(HttpMethod.GET, "/api/products/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
-        .requestMatchers("/api/products/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER")
+.requestMatchers(HttpMethod.PUT, "/api/users/staff/**")
+.hasAuthority("SHOP_OWNER")
 
-        .requestMatchers("/api/transactions/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+.requestMatchers(HttpMethod.PATCH, "/api/users/staff/**")
+.hasAuthority("SHOP_OWNER")
 
-        .requestMatchers("/api/orders/**")
-        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+                        .requestMatchers(HttpMethod.GET, "/api/warehouses/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+                        .requestMatchers("/api/warehouses/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER")
 
-        .anyRequest().authenticated()
-)
+                        .requestMatchers(HttpMethod.GET, "/api/products/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+                        .requestMatchers("/api/products/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER")
+
+                        .requestMatchers("/api/transactions/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+                        .requestMatchers("/api/orders/**")
+                        .hasAnyAuthority("SHOP_OWNER", "SHOP_MANAGER", "SHOP_STAFF")
+
+                        .anyRequest().authenticated()
+                )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-    
-
 }

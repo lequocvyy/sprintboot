@@ -80,7 +80,7 @@ export default function RegisterOwnerPage() {
               className="w-full rounded-xl border px-4 py-2 outline-none"
               value={fullName}
               onChange={(e) => setFullName(e.target.value)}
-              placeholder="Lê Quốc Vy"
+              placeholder="Fullname(ex: Lê Quốc Vỹ): "
             />
           </div>
 
@@ -91,7 +91,7 @@ export default function RegisterOwnerPage() {
               className="w-full rounded-xl border px-4 py-2 outline-none"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="abc@gmail.com"
+              placeholder="Your email (ex: abc@gmail.com): "
             />
           </div>
 
