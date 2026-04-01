@@ -51,15 +51,15 @@ public class UserServiceImpl implements UserService {
         }
 
         RoleName roleName;
-try {
-    roleName = RoleName.valueOf(request.getRole());
-} catch (Exception e) {
-    throw new BusinessException("Invalid role");
-}
+        try {
+            roleName = RoleName.valueOf(request.getRole().trim().toUpperCase());
+        } catch (Exception e) {
+            throw new BusinessException("Invalid role");
+        }
 
-if (roleName != RoleName.SHOP_STAFF) {
-    throw new BusinessException("Only SHOP_STAFF role can be assigned");
-}
+        if (roleName != RoleName.SHOP_STAFF && roleName != RoleName.SHOP_MANAGER) {
+            throw new BusinessException("Only SHOP_STAFF or SHOP_MANAGER role can be assigned");
+        }
 
         Role role = roleRepository.findByName(roleName)
                 .orElseThrow(() -> new BusinessException("Role not found: " + roleName));
@@ -94,6 +94,51 @@ if (roleName != RoleName.SHOP_STAFF) {
                 .toList();
     }
 
+    @Override
+    public StaffResponse updateStaffStatus(Long userId, Boolean enabled) {
+        validateOwnerPermission();
+        securityService.requireShop();
+
+        if (enabled == null) {
+            throw new BusinessException("Enabled status is required");
+        }
+
+        Long shopId = securityService.getCurrentShopId();
+        Long currentUserId = securityService.getCurrentUserId();
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new BusinessException("Staff not found"));
+
+        if (user.getShop() == null || !shopId.equals(user.getShop().getId())) {
+            throw new BusinessException("Staff does not belong to current shop");
+        }
+
+        if (Boolean.TRUE.equals(user.getPlatformAdmin())) {
+            throw new BusinessException("Cannot update platform admin status");
+        }
+
+        if (currentUserId.equals(user.getId()) && !enabled) {
+            throw new BusinessException("You cannot disable your own account");
+        }
+
+        boolean isOwner = user.getRoles() != null && user.getRoles()
+                .stream()
+                .anyMatch(role ->
+                        role != null
+                                && role.getName() != null
+                                && role.getName() == RoleName.SHOP_OWNER
+                );
+
+        if (isOwner && !enabled) {
+            throw new BusinessException("Cannot disable shop owner account");
+        }
+
+        user.setEnabled(enabled);
+        User savedUser = userRepository.save(user);
+
+        return toStaffResponse(savedUser);
+    }
+
     private void validateOwnerPermission() {
         if (!securityService.getCurrentUser().getRoleNames().contains("SHOP_OWNER")) {
             throw new BusinessException("Only shop owner can manage staff");
@@ -121,45 +166,4 @@ if (roleName != RoleName.SHOP_STAFF) {
         response.setRoles(roles);
         return response;
     }
-
-    @Override
-public StaffResponse updateStaffStatus(Long userId, Boolean enabled) {
-    validateOwnerPermission();
-    securityService.requireShop();
-
-    if (enabled == null) {
-        throw new BusinessException("Enabled status is required");
-    }
-
-    Long shopId = securityService.getCurrentShopId();
-    Long currentUserId = securityService.getCurrentUserId();
-
-    User user = userRepository.findById(userId)
-            .orElseThrow(() -> new BusinessException("Staff not found"));
-
-    if (user.getShop() == null || !shopId.equals(user.getShop().getId())) {
-        throw new BusinessException("Staff does not belong to current shop");
-    }
-
-    if (Boolean.TRUE.equals(user.getPlatformAdmin())) {
-        throw new BusinessException("Cannot update platform admin status");
-    }
-
-    if (currentUserId.equals(user.getId()) && !enabled) {
-        throw new BusinessException("You cannot disable your own account");
-    }
-
-    boolean isOwner = user.getRoles() != null && user.getRoles()
-            .stream()
-            .anyMatch(role -> role != null && role.getName() != null && role.getName().name().equals("SHOP_OWNER"));
-
-    if (isOwner && !enabled) {
-        throw new BusinessException("Cannot disable shop owner account");
-    }
-
-    user.setEnabled(enabled);
-    User savedUser = userRepository.save(user);
-
-    return toStaffResponse(savedUser);
-}
 }
